@@ -3,6 +3,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
     id "org.sonarqube" version "3.0"
+    id 'maven-publish'
 }
 
 group = 'dalton.neely'
@@ -10,7 +11,9 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 repositories {
-    mavenCentral()
+    maven {
+        url = 'http://localhost:8081/repository/maven-central'
+    }
 }
 
 dependencies {
@@ -25,3 +28,24 @@ test {
 }
 
 project.tasks["sonarqube"].dependsOn tasks.build
+
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        maven(MavenPublication) {
+            //noinspection GroovyAssignabilityCheck
+            artifact bootJar
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username "admin"
+                password "admin"
+            }
+            def releasesRepoUrl = "http://localhost:8081/repository/maven-releases"
+            def snapshotsRepoUrl = "http://localhost:8081/repository/maven-snapshots"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+}
